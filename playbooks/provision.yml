@@ -5,4 +5,12 @@
   vars_files:
     - config.yml
   roles:
-    - provision
+    - name: provision
+      tags:
+        - provision
+    - name: config
+      tags:
+        - config
+    - name: plugins
+      tags:
+        - plugins

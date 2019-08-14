@@ -1,0 +1,9 @@
+- name: Installing plugins
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ minecraft_dir }}/plugins/{{ item.name }}"
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0644
+    http_agent: "{{ client_user_agent }}"
+  with_items: "{{ minecraft_plugins }}"

@@ -1,0 +1,12 @@
+- name: Copying configuration files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ minecraft_dir }}/{{ item }}"
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0644
+  with_items:
+    - bukkit.yml
+    - spigot.yml
+    - paper.yml
+    - server.properties

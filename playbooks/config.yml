@@ -1,6 +1,9 @@
 minecraft_dir: /opt/papermc
 minecraft_user: minecraft
 minecraft_group: minecraft
+minecraft_plugins:
+  - name: SkinsRestorer.jar
+    url: https://github.com/SkinsRestorer/SkinsRestorerX/releases/download/13.7.1/SkinsRestorer.jar
 
 papermc_download_url: https://papermc.io/api/v1/paper/1.14.4/167/download
 papermc_jar: papermc.jar
