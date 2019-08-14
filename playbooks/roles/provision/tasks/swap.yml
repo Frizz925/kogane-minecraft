@@ -1,0 +1,27 @@
+- name: Checking if swap file exists
+  stat: path={{ swap_file }}
+  register: swap_file_check
+- name: Creating swap file
+  command: "dd if=/dev/zero of={{ swap_file }} bs=4M count={{ (swap_size_mb / 4) | round | int }}"
+  when: not swap_file_check.stat.exists
+- name: Changing permission for swap file
+  file:
+    path: "{{ swap_file }}"
+    owner: root
+    group: root
+    mode: 0600
+  when: not swap_file_check.stat.exists
+- name: Formatting swap file
+  command: "mkswap {{ swap_file }}"
+  when: not swap_file_check.stat.exists
+- name: Adding to fstab
+  lineinfile:
+    dest: /etc/fstab
+    regexp: "{{ swap_file }}"
+    line: "{{ swap_file }} none swap sw 0 0"
+- name: Turning on swap
+  command: swapon -a
+- name: Setting swappiness
+  sysctl:
+    name: vm.swappiness
+    value: "1"
