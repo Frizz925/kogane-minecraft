@@ -1,0 +1,14 @@
+- name: Generating supervisor configuration
+  template:
+    src: supervisor.conf.j2
+    dest: /etc/supervisor/conf.d/minecraft.conf
+    owner: root
+    group: root
+    mode: 0644
+  register: supervisor_conf
+- name: Restarting supervisor service
+  systemd:
+    name: supervisor
+    state: restarted
+    enabled: yes
+  when: supervisor_conf.changed

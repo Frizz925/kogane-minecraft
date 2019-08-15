@@ -19,8 +19,10 @@
     dest: /etc/fstab
     regexp: "{{ swap_file }}"
     line: "{{ swap_file }} none swap sw 0 0"
+  register: fstab
 - name: Turning on swap
   command: swapon -a
+  when: fstab.changed
 - name: Setting swappiness
   sysctl:
     name: vm.swappiness

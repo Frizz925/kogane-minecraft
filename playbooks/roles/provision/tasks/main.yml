@@ -1,3 +1,7 @@
+- name: Setting up swap space
+  include: swap.yml
+  tags:
+    - swap
 - name: Installing prerequisite packages
   apt:
     name:
@@ -40,7 +44,7 @@
     owner: "{{ minecraft_user }}"
     group: "{{ minecraft_group }}"
     mode: 0644
-- name: Setting up swap space
-  include: swap.yml
+- name: Setting up supervisor
+  include: supervisor.yml
   tags:
-    - swap
+    - supervisor
