@@ -1,0 +1,11 @@
+- name: Creating new group
+  group:
+    name: "{{ minecraft_group }}"
+    state: present
+- name: Creating new user
+  user:
+    name: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    comment: "User for running Minecraft server"
+    shell: /usr/sbin/nologin
+    state: present

@@ -7,43 +7,22 @@
     name:
       - socat
       - netcat-openbsd
+      - python3
       - openjdk-11-jre
       - supervisor
     state: latest
     update_cache: yes
     cache_valid_time: 86400
-- name: Creating new group
-  group:
-    name: "{{ minecraft_group }}"
-    state: present
-- name: Creating new user
-  user:
-    name: "{{ minecraft_user }}"
-    group: "{{ minecraft_group }}"
-    comment: "User for running Minecraft server"
-    shell: /usr/sbin/nologin
-    state: present
-- name: Creating Minecraft directory
-  file:
-    path: "{{ minecraft_dir }}"
-    state: directory
-    owner: "{{ minecraft_user }}"
-    group: "{{ minecraft_group }}"
-    mode: 0755
-- name: Generating server script
-  template:
-    src: start_server.sh.j2
-    dest: "{{ minecraft_dir }}/start_server.sh"
-    owner: "{{ minecraft_user }}"
-    group: "{{ minecraft_group }}"
-    mode: 0755
-- name: Downloading PaperMC jar
-  get_url:
-    url: "{{ papermc_download_url }}"
-    dest: "{{ minecraft_dir }}/{{ papermc_jar }}"
-    owner: "{{ minecraft_user }}"
-    group: "{{ minecraft_group }}"
-    mode: 0644
+  tags:
+    - packages
+- name: Setting up accounts
+  include: accounts.yml
+  tags:
+    - accounts
+- name: Setting up Minecraft server
+  include: server.yml
+  tags:
+    - server
 - name: Setting up supervisor
   include: supervisor.yml
   tags:

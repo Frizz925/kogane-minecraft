@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+import os
+import signal
+import socket
+import sys
+import traceback
+from configparser import ConfigParser
+from subprocess import PIPE, Popen
+from threading import Thread
+
+CONFIG_PATH = 'server.ini'
+HANDLED_SIGNALS = [signal.SIGINT, signal.SIGTERM]
+WAIT_TIMEOUT_SECS = 30
+SOCKET_TIMEOUT_SECS = 5
+BUFFER_SIZE = 16
+
+
+class SocketServer(object):
+    def __init__(self, sock, proc):
+        self.sock = sock
+        self.proc = proc
+        self.running = False
+        self.last_signal = None
+
+    def serve_forever(self):
+        if self.running:
+            raise Exception('Server is already running!')
+        self.running = True
+        self.sock.listen(1)
+        while self.running:
+            try:
+                conn, _ = self.sock.accept()
+                self.handle_connection(conn)
+            except socket.timeout:
+                pass
+            except Exception:
+                traceback.print_exc()
+
+    def handle_connection(self, conn):
+        buf = b''
+        try:
+            while True:
+                data = conn.recv(BUFFER_SIZE)
+                if data:
+                    buf += data
+                else:
+                    self.send_command(buf.decode('utf-8'))
+                    break
+        finally:
+            conn.close()
+
+    def register_signals(self):
+        for signum in HANDLED_SIGNALS:
+            signal.signal(signum, self.signal_handler)
+
+    def watch_process(self):
+        t = Thread(target=self.process_watcher)
+        t.daemon = True
+        t.start()
+        return t
+
+    def signal_handler(self, signum, frame):
+        if self.running:
+            if signum in (signal.SIGINT, signal.SIGTERM):
+                # We handle these signals as graceful shutdown
+                self.shutdown_process()
+            else:
+                # While we just pass through any other signals
+                self.proc.send_signal(signum)
+            self.running = False
+        self.last_signal = signum
+
+    def process_watcher(self):
+        # Watch the process until it stops, then set the flag
+        # for the socket server to stop listening
+        self.proc.wait()
+        if self.running:
+            self.running = False
+
+    def shutdown_process(self):
+        # Graceful shutdown via console command
+        self.send_command('stop')
+
+    def send_command(self, command):
+        command = command.strip() + '\n'
+        sys.stdout.write('> ' + command)
+        sys.stdout.flush()
+        self.proc.stdin.write(command)
+        self.proc.stdin.flush()
+
+
+def main():
+    if not os.path.isfile(CONFIG_PATH):
+        print_err('Config file \'%s\' not found' % CONFIG_PATH)
+        sys.exit(1)
+    config = ConfigParser()
+    config.read(CONFIG_PATH)
+
+    server_dir = config['server']['Directory']
+    server_args = config['server']['JavaArgs']
+    server_jar = config['server']['ServerJar']
+    server_socket_path = config['server']['SocketPath']
+
+    server_cmd = 'java %s -jar %s' % (server_args, server_jar)
+    proc = Popen(server_cmd.split(),
+                 stdin=PIPE,
+                 encoding='utf-8',
+                 preexec_fn=ignore_signal,
+                 cwd=server_dir)
+
+    with proc:
+        if os.path.exists(server_socket_path):
+            os.unlink(server_socket_path)
+        server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server_socket.settimeout(SOCKET_TIMEOUT_SECS)
+        server_socket.bind(server_socket_path)
+
+        socket_server = SocketServer(server_socket, proc)
+        watcher = socket_server.watch_process()
+        try:
+            socket_server.register_signals()
+            socket_server.serve_forever()
+        except Exception:
+            traceback.print_exc()
+        finally:
+            # We somehow reached here without handling any signal
+            # while the socket server is still running
+            if socket_server.last_signal is None and socket_server.running:
+                # We need to kill the child process which in turn
+                # stops the socket server as well, triggering the
+                # process watcher
+                socket_server.shutdown_process()
+            watcher.join()
+
+            if os.path.exists(server_socket_path):
+                os.unlink(server_socket_path)
+
+
+def ignore_signal():
+    for signum in HANDLED_SIGNALS:
+        signal.signal(signum, signal.SIG_IGN)
+
+
+def print_err(msg):
+    sys.stderr.write('%s\n' % msg)
+    sys.stderr.flush()
+
+
+if __name__ == '__main__':
+    main()

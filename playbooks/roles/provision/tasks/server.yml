@@ -1,0 +1,28 @@
+- name: Creating Minecraft directory
+  file:
+    path: "{{ minecraft_dir }}"
+    state: directory
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0755
+- name: Copying server runner script
+  copy:
+    src: start-server
+    dest: "{{ minecraft_dir }}/start-server"
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0755
+- name: Generating server runner configuration
+  template:
+    src: server.ini.j2
+    dest: "{{ minecraft_dir }}/server.ini"
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0644
+- name: Downloading PaperMC jar
+  get_url:
+    url: "{{ papermc_download_url }}"
+    dest: "{{ minecraft_dir }}/{{ papermc_jar }}"
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0644

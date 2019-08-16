@@ -1,10 +1,10 @@
 [program:minecraft]
 directory={{ minecraft_dir }}
-command={{ minecraft_dir }}/start_server.sh
+command={{ minecraft_dir }}/start-server
 user={{ minecraft_user }}
 numprocs=1
 autostart=true
 autorestart=unexpected
 startsecs=5
 startretries=3
-stopsignal=TERM
+stopsignal=INT

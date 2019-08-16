@@ -1,0 +1,5 @@
+[server]
+Directory={{ minecraft_dir }}
+JavaArgs=-Xms{{ java_min_mem }} -Xmx{{ java_max_mem }} -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:MaxGCPauseMillis=100 -XX:+DisableExplicitGC -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:G1MixedGCLiveThresholdPercent=35 -XX:+AlwaysPreTouch -XX:+ParallelRefProcEnabled -Dusing.aikars.flags=mcflags.emc.gs
+ServerJar={{ papermc_jar }}
+SocketPath={{ minecraft_socket }}
