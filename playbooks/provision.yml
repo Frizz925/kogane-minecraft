@@ -1,9 +1,9 @@
 - name: Provision Minecraft server
   hosts: minecraft
-  gather_facts: no
   become: yes
   vars_files:
     - config.yml
+    - vault.yml
   roles:
     - name: provision
       tags:

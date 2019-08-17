@@ -7,3 +7,9 @@
     mode: 0644
     http_agent: "{{ client_user_agent }}"
   with_items: "{{ minecraft_plugins }}"
+- name: Generating plugin configurations
+  include: config.yml
+  with_items:
+    - { name: CoreProtect, config: config.yml }
+    - { name: LuckPerms, config: config.yml }
+    - { name: LWC, config: core.yml }

@@ -1,0 +1,14 @@
+- name: Creating plugin directory
+  file:
+    path: "{{ minecraft_dir }}/plugins/{{ item.name }}"
+    state: directory
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0755
+- name: Generating plugin configuration 
+  template:
+    src: "{{ item.name }}-{{ item.config }}.j2"
+    dest: "{{ minecraft_dir }}/plugins/{{ item.name }}/{{ item.config }}"
+    owner: "{{ minecraft_user }}"
+    group: "{{ minecraft_group }}"
+    mode: 0600

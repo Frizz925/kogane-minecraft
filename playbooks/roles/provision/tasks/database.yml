@@ -1,0 +1,12 @@
+- name: Creating new database
+  mysql_db:
+    name: "{{ database_name }}"
+    state: present
+    login_unix_socket: "{{ database_socket }}"
+- name: Creating new database user
+  mysql_user:
+    name: "{{ database_user }}"
+    password: "{{ database_password }}"
+    priv: '{{ database_name }}.*:ALL'
+    state: present
+    login_unix_socket: "{{ database_socket }}"

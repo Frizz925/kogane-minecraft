@@ -8,6 +8,9 @@ minecraft_plugins:
 papermc_download_url: https://papermc.io/api/v1/paper/1.14.4/167/download
 papermc_jar: papermc.jar
 
+database_name: minecraft
+database_user: minecraft
+
 java_max_mem: 3072M
 java_min_mem: 3072M
 
